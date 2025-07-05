@@ -53,6 +53,14 @@ public class OBDService: ObservableObject, OBDServiceDelegate {
             ConfigurationService.shared.connectionType = connectionType
         }
     }
+    
+    @Published public private(set) var foundPeripherals: [CBPeripheral] = []
+    
+    public var peripheralPublisher: AnyPublisher<CBPeripheral, Never>? {
+        return internalBLEManager?.peripheralPublisher
+    }
+    
+    private var internalBLEManager: BLEManager?
 
     /// The internal ELM327 object responsible for direct adapter interaction.
     private var elm327: ELM327
@@ -72,12 +80,17 @@ public class OBDService: ObservableObject, OBDServiceDelegate {
         switch connectionType {
         case .bluetooth:
             let bleManager = BLEManager()
+            self.internalBLEManager = bleManager
             elm327 = ELM327(comm: bleManager)
             bleManager.peripheralPublisher
-                .sink { [weak self] peripheral in
-                    self?.peripherals.append(peripheral)
-                }
-                .store(in: &cancellables)
+                .receive(on: DispatchQueue.main)
+                   .sink { [weak self] peripheral in
+                       guard let self = self else { return }
+                       if !self.peripherals.contains(where: { $0.identifier == peripheral.identifier }) {
+                           self.peripherals.append(peripheral)
+                       }
+                   }
+                   .store(in: &cancellables)
         case .wifi:
             elm327 = ELM327(comm: WifiManager())
         case .demo:
@@ -133,11 +146,23 @@ public class OBDService: ObservableObject, OBDServiceDelegate {
         stopConnection()
         initializeELM327()
     }
+    
+    public func startScan() {
+        internalBLEManager?.startScanning(nil)
+        isScanning = true
+        peripherals = [] // optional: reset list
+    }
+
+    public func stopScan() {
+        internalBLEManager?.stopScan()
+        isScanning = false
+    }
 
     private func initializeELM327() {
         switch connectionType {
         case .bluetooth:
             let bleManager = BLEManager()
+            self.internalBLEManager = bleManager
             elm327 = ELM327(comm: bleManager)
             bleManager.peripheralPublisher
                 .sink { [weak self] peripheral in
@@ -299,6 +324,10 @@ public class OBDService: ObservableObject, OBDServiceDelegate {
         } catch {
             throw OBDServiceError.scanFailed(underlyingError: error)
         }
+    }
+    
+    public var bleManager: BLEManager? {
+        return internalBLEManager
     }
 
 //    public func test() {
