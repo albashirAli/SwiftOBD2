@@ -19,6 +19,8 @@ import CoreBluetooth
 import Foundation
 import OSLog
 
+public typealias Peripheral = CBPeripheral
+
 public enum ConnectionState {
     case disconnected
     case connectedToAdapter

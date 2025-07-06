@@ -18,6 +18,8 @@ import CoreBluetooth
 import Foundation
 import OSLog
 
+public typealias VehicleInfo = OBDInfo
+
 enum ELM327Error: Error, LocalizedError {
     case noProtocolFound
     case invalidResponse(message: String)
