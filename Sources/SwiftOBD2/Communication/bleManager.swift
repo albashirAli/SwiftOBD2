@@ -74,12 +74,12 @@ public class BLEManager: NSObject, CommProtocol {
 
     // MARK: - Central Manager Control Methods
 
-    func startScanning(_ serviceUUIDs: [CBUUID]?) {
+    public func startScanning(_ serviceUUIDs: [CBUUID]?) {
         let scanOption = [CBCentralManagerScanOptionAllowDuplicatesKey: true]
         centralManager?.scanForPeripherals(withServices: serviceUUIDs, options: scanOption)
     }
 
-    func stopScan() {
+    public func stopScan() {
         centralManager?.stopScan()
     }
 
@@ -138,7 +138,7 @@ public class BLEManager: NSObject, CommProtocol {
         }
     }
 
-    func connect(to peripheral: CBPeripheral) {
+    public func connect(to peripheral: CBPeripheral) {
         logger.info("Connecting to: \(peripheral.name ?? "")")
         centralManager.connect(peripheral, options: [CBConnectPeripheralOptionNotifyOnDisconnectionKey: true])
         if centralManager.isScanning {
