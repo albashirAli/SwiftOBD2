@@ -280,7 +280,15 @@ public class OBDService: ObservableObject, OBDServiceDelegate {
             throw OBDServiceError.clearFailed(underlyingError: error)
         }
     }
-
+    
+    public func requestVins() async throws -> String {
+        if let vin = await elm327.requestVin() {
+            return vin
+        } else {
+            throw OBDServiceError.commandFailed(command: "09 02", error: BLEManagerError.noData)
+        }
+    }
+    
     /// Returns the vehicle's status.
     ///  - Returns: The vehicle's status.
     ///  - Throws: Errors that might occur during the request process.
