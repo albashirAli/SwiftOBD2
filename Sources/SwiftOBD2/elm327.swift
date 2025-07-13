@@ -225,19 +225,78 @@ class ELM327 {
     /// Initializes the adapter by sending a series of commands.
     /// - Parameter setupOrder: A list of commands to send in order.
     /// - Throws: Various setup-related errors.
+//    func adapterInitialization() async throws {
+//        //        [.ATZ, .ATD, .ATL0, .ATE0, .ATH1, .ATAT1, .ATRV, .ATDPN]
+//        logger.info("Initializing ELM327 adapter...")
+//        do {
+//            _ = try await sendCommand("ATZ") // Reset adapter
+//            _ = try await okResponse("ATE0") // Echo off
+//            _ = try await okResponse("ATL0") // Linefeeds off
+//            _ = try await okResponse("ATS0") // Spaces off
+//            _ = try await okResponse("ATH1") // Headers off
+//            _ = try await okResponse("ATSP0") // Set protocol to automatic
+//            logger.info("ELM327 adapter initialized successfully.")
+//        } catch {
+//            logger.error("Adapter initialization failed: \(error.localizedDescription)")
+//            throw ELM327Error.adapterInitializationFailed
+//        }
+//    }
+    
     func adapterInitialization() async throws {
-        //        [.ATZ, .ATD, .ATL0, .ATE0, .ATH1, .ATAT1, .ATRV, .ATDPN]
-        logger.info("Initializing ELM327 adapter...")
+        logger.info("🔧 Starting ELM327 adapter initialization...")
+
         do {
-            _ = try await sendCommand("ATZ") // Reset adapter
-            _ = try await okResponse("ATE0") // Echo off
-            _ = try await okResponse("ATL0") // Linefeeds off
-            _ = try await okResponse("ATS0") // Spaces off
-            _ = try await okResponse("ATH1") // Headers off
-            _ = try await okResponse("ATSP0") // Set protocol to automatic
-            logger.info("ELM327 adapter initialized successfully.")
+            do {
+                _ = try await sendCommand("ATZ") // Reset adapter
+                print("✅ ATZ (reset) succeeded")
+            } catch {
+                print("❌ ATZ failed: \(error)")
+                throw error
+            }
+
+            do {
+                _ = try await okResponse("ATE0") // Echo off
+                print("✅ ATE0 (echo off) succeeded")
+            } catch {
+                print("❌ ATE0 failed: \(error)")
+                throw error
+            }
+
+            do {
+                _ = try await okResponse("ATL0") // Linefeeds off
+                print("✅ ATL0 (linefeeds off) succeeded")
+            } catch {
+                print("❌ ATL0 failed: \(error)")
+                throw error
+            }
+
+            do {
+                _ = try await okResponse("ATS0") // Spaces off
+                print("✅ ATS0 (spaces off) succeeded")
+            } catch {
+                print("❌ ATS0 failed: \(error)")
+                throw error
+            }
+
+            do {
+                _ = try await okResponse("ATH1") // Headers on
+                print("✅ ATH1 (headers on) succeeded")
+            } catch {
+                print("❌ ATH1 failed: \(error)")
+                throw error
+            }
+
+            do {
+                _ = try await okResponse("ATSP0") // Set protocol to automatic
+                print("✅ ATSP0 (auto protocol) succeeded")
+            } catch {
+                print("❌ ATSP0 failed: \(error)")
+                throw error
+            }
+
+            logger.info("✅ ELM327 adapter initialization completed successfully.")
         } catch {
-            logger.error("Adapter initialization failed: \(error.localizedDescription)")
+            logger.error("❌ Adapter initialization failed: \(error.localizedDescription)")
             throw ELM327Error.adapterInitializationFailed
         }
     }
