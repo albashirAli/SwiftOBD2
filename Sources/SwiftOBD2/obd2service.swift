@@ -127,7 +127,9 @@ public class OBDService: ObservableObject, OBDServiceDelegate {
     //possibly disconnect the viechle if timeout happens
     public func connectToVehicleOnly(preferedProtocol: PROTOCOL? = nil, timeout: TimeInterval = 7) async throws -> OBDInfo {
         do {
+            print("🔧 Re-initializing adapter before vehicle connection...")
             try await elm327.adapterInitialization() // Optional: run if needed again
+            print("🔧 testing silent fail...")
             let obdInfo = try await initializeVehicle(preferedProtocol)
             return obdInfo
         } catch {
