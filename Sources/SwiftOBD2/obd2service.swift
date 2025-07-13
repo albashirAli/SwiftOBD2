@@ -123,6 +123,16 @@ public class OBDService: ObservableObject, OBDServiceDelegate {
             throw OBDServiceError.adapterConnectionFailed(underlyingError: error) // Propagate
         }
     }
+    
+    public func connectToVehicleOnly(preferedProtocol: PROTOCOL? = nil) async throws -> OBDInfo {
+        do {
+            try await elm327.adapterInitialization() // Optional: run if needed again
+            let obdInfo = try await initializeVehicle(preferedProtocol)
+            return obdInfo
+        } catch {
+            throw OBDServiceError.adapterConnectionFailed(underlyingError: error)
+        }
+    }
 
     /// Initializes communication with the vehicle and retrieves vehicle information.
     ///
