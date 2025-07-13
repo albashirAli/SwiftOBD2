@@ -47,6 +47,7 @@ public class OBDService: ObservableObject, OBDServiceDelegate {
     @Published public private(set) var isScanning: Bool = false
     @Published public private(set) var peripherals: [CBPeripheral] = []
     @Published public private(set) var connectedPeripheral: CBPeripheral?
+    public var lastConnectedPeripheral: CBPeripheral?
     @Published public var connectionType: ConnectionType {
         didSet {
             switchConnectionType(connectionType)
@@ -82,6 +83,13 @@ public class OBDService: ObservableObject, OBDServiceDelegate {
             let bleManager = BLEManager()
             self.internalBLEManager = bleManager
             elm327 = ELM327(comm: bleManager)
+            bleManager.$connectedPeripheral
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] peripheral in
+                    self?.lastConnectedPeripheral = peripheral
+                }
+                .store(in: &cancellables)
+            
             bleManager.peripheralPublisher
                 .receive(on: DispatchQueue.main)
                    .sink { [weak self] peripheral in
@@ -124,19 +132,6 @@ public class OBDService: ObservableObject, OBDServiceDelegate {
         }
     }
     
-    //possibly disconnect the viechle if timeout happens
-    public func connectToVehicleOnly(preferedProtocol: PROTOCOL? = nil, timeout: TimeInterval = 7) async throws -> OBDInfo {
-        do {
-            print("🔧 Re-initializing adapter before vehicle connection...")
-            try await elm327.adapterInitialization() // Optional: run if needed again
-            print("🔧 testing silent fail...")
-            let obdInfo = try await initializeVehicle(preferedProtocol)
-            return obdInfo
-        } catch {
-            throw OBDServiceError.adapterConnectionFailed(underlyingError: error)
-        }
-    }
-
     /// Initializes communication with the vehicle and retrieves vehicle information.
     ///
     /// - Parameter preferedProtocol: The optional OBD2 protocol to use (if supported).
@@ -350,6 +345,11 @@ public class OBDService: ObservableObject, OBDServiceDelegate {
     public var bleManager: BLEManager? {
         return internalBLEManager
     }
+    
+    public func getLastConnectedPeripheral() -> CBPeripheral? {
+        return lastConnectedPeripheral
+    }
+    
 
 //    public func test() {
 //        if let resourcePath = Bundle.module.resourcePath {
